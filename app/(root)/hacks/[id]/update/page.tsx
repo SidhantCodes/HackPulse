@@ -13,7 +13,7 @@ const UpdateHack = () => {
       </h3>
     </section>
     <div className="wrapper my-8">
-      <EventForm uid={userId} type="Update" />
+      <EventForm userId={userId} type="Update" />
     </div>
     </>
   )
