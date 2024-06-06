@@ -26,21 +26,26 @@ import { useUploadThing } from "@/lib/uploadthing";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation";
-import { createHack } from "@/lib/mongodb/actions/hack.actions";
+import { createHack, updateHack } from "@/lib/mongodb/actions/hack.actions";
 import { IEvent } from "@/lib/mongodb/database/models/hackathon.model";
+import { getUserIdByClerkId } from "@/lib/mongodb/actions/user.actions";
 
 type EventFormProps = {
   userId: string
   type: "Create" | "Update"
-  // event?: IEvent,
-  // eventId?: string
+  event?: IEvent,
+  eventId?: string
 }
 
 
 
-const EventForm = ({ userId, type }: EventFormProps) => {
+const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const router = useRouter();
-  const initVal = eventDefaultValues;
+  const initVal = event && type==='Update' ? {
+    ...event,
+    startDateTime: new Date(event.startDateTime),
+    endDateTime: new Date(event.endDateTime)
+  } : eventDefaultValues;
   const { startUpload } = useUploadThing('imageUploader')
   const form = useForm<z.infer<typeof HackFormSchema>>({
     resolver: zodResolver(HackFormSchema),
@@ -67,6 +72,24 @@ const EventForm = ({ userId, type }: EventFormProps) => {
         if(newHack){
           form.reset();
           router.push(`/hacks/${newHack._id}`)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }else if(type==='Update'){
+      if(!eventId){
+        router.back()
+        return;
+      }
+      try {
+        const updatedHack = await updateHack({
+          event: { ...values, imageUrl: uploadedImgUrl, _id: eventId },
+          userId,
+          path: `/hacks/${eventId}`
+        });
+        if(updatedHack){
+          form.reset();
+          router.push(`/hacks/${updatedHack._id}`)
         }
       } catch (error) {
         console.log(error)

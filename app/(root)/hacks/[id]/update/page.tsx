@@ -1,10 +1,20 @@
 import { EventForm } from '@/components/shared'
+import { getHackById } from '@/lib/mongodb/actions/hack.actions';
+import { getUserIdByClerkId } from '@/lib/mongodb/actions/user.actions';
 import { auth } from '@clerk/nextjs/server'
-import React from 'react'
 
-const UpdateHack = () => {
+type UpdateEventProps = {
+  params: {
+    id: string
+  }
+}
+
+const UpdateHack = async({ params: { id } }: UpdateEventProps) => {
   const { sessionClaims } = auth();
-  const userId = sessionClaims?.userId as string;
+  const uid = sessionClaims?.userId as string;
+  const userId = await getUserIdByClerkId(uid)
+
+  const hack = await getHackById(id)
   return (
     <>
     <section className='bg-dotted-pattern bg-cover bg-center py-5 md:py-10 bg-primary-50'>
@@ -13,7 +23,7 @@ const UpdateHack = () => {
       </h3>
     </section>
     <div className="wrapper my-8">
-      <EventForm userId={userId} type="Update" />
+      <EventForm userId={userId} type="Update" event={hack} eventId={hack._id} />
     </div>
     </>
   )

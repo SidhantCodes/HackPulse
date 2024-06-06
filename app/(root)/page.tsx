@@ -1,8 +1,16 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { Collection } from "@/components/shared";
+import { getAllHacks } from "@/lib/mongodb/actions/hack.actions";
 
-export default function Home() {
+export default async function Home() {
+  const hacks = await getAllHacks({
+    query: '',
+    category: '',
+    page: 1,
+    limit: 6
+  });
   return (
     <>
       <section className="bg-primary-50 bg-dotted-pattern bg-contain py-5 md:py-24">
@@ -26,6 +34,15 @@ export default function Home() {
           Search
           CategoryFilter
         </div>
+        <Collection 
+          data = {hacks?.data}
+          emptyTitle = "No hackathons found"
+          emptyStateSubText = 'Check back later for more hackathons!'
+          collectionType = 'All_Hacks'
+          limit={5}
+          page={1}
+          totalPages={2}
+        />
       </section>
     </>
   );
