@@ -1,11 +1,18 @@
-import { getHackById } from "@/lib/mongodb/actions/hack.actions"
+import { getHackById, getRelatedHacksByCategory } from "@/lib/mongodb/actions/hack.actions"
 import { formatDateTime } from "@/lib/utils";
 import { SearchParamProps } from "@/types"
+import { Collection } from "@/components/shared";
 import Image from "next/image";
-const EventDetails = async({ params: { id } }: SearchParamProps) => {
+const EventDetails = async({ params: { id }, searchParams }: SearchParamProps) => {
   
   const hack = await getHackById(id);
+  const relatedHacks = await getRelatedHacksByCategory({
+    categoryId: hack.category._id,
+    eventId: hack._id,
+    page: searchParams.page as string
+  })
   return (
+    <>
     <section className="flex justify-center bg-primary-50 bg-dotted-pattern bg-contain">
       <div className="grid grid-cols-1 md:grid-cols-2 2x:max-w-7xl">
         <Image src={hack.imageUrl} alt='hero' width={1000} height={1000} className="h-full min-h-[300px] object-cover object-center"/>
@@ -57,6 +64,19 @@ const EventDetails = async({ params: { id } }: SearchParamProps) => {
         </div>
       </div>
     </section>
+    <section className="wrapper my-8 flex flex-col gap-8 md:gap-12">
+      <h2 className="h2-bold">Related Hackathon</h2>  
+      <Collection 
+          data = {relatedHacks?.data}
+          emptyTitle = "No related hackathons found"
+          emptyStateSubText = 'Check back later for more hackathons!'
+          collectionType = 'All_Hacks'
+          limit={5}
+          page={1}
+          totalPages={2}
+        />
+    </section>
+    </>
   )
 }
 
